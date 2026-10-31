@@ -1,3 +1,4 @@
+import { isAbsoluteHttpUrl } from "../atlas/root";
 import type { Atlas } from "../atlas/types";
 import { sessionStats } from "../store/session";
 import { Rating } from "../store/srs";
@@ -10,6 +11,7 @@ const SANS = '-apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei
 const load = (src: string) =>
   new Promise<HTMLImageElement | null>((r) => {
     const i = new Image();
+    if (isAbsoluteHttpUrl(src)) i.crossOrigin = "anonymous";
     i.onload = () => r(i);
     i.onerror = () => r(null);
     i.src = src;

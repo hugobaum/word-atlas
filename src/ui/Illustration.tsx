@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isAbsoluteHttpUrl } from "../atlas/root";
 
 const HUES = ["#C4573A", "#7F9B77", "#D9A03A", "#5F7FA3", "#A86B8C", "#4E7C76"];
 
@@ -26,6 +27,7 @@ export function Illustration({
         <img
           src={src}
           alt={alt ?? ""}
+          crossOrigin={isAbsoluteHttpUrl(src) ? "anonymous" : undefined}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
           draggable={false}

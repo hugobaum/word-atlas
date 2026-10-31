@@ -1,7 +1,34 @@
-/* Word Atlas offline cache: app shell network-first, everything else cache-first. */
+/* Word Atlas offline cache: app shell network-first, everything else cache-first.
+   When the page registers sw.js?atlas=<base>, media on that origin is cached too. */
 const VERSION = "atlas-v1";
 const SHELL = `${VERSION}-shell`;
 const MEDIA = `${VERSION}-media`;
+
+function remoteAtlasRoot() {
+  const raw = new URL(self.location.href).searchParams.get("atlas");
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    return { origin: u.origin, path: u.pathname.replace(/\/+$/, "") };
+  } catch {
+    return null;
+  }
+}
+
+const REMOTE = remoteAtlasRoot();
+
+function isRemoteAtlas(url) {
+  if (!REMOTE || url.origin !== REMOTE.origin) return false;
+  if (!REMOTE.path) return true;
+  return url.pathname === REMOTE.path || url.pathname.startsWith(`${REMOTE.path}/`);
+}
+
+function isAtlasMedia(url) {
+  if (url.origin === location.origin) return /\/atlas\/(img|thumb|audio)\//.test(url.pathname);
+  if (!isRemoteAtlas(url)) return false;
+  const rel = REMOTE.path ? url.pathname.slice(REMOTE.path.length) : url.pathname;
+  return /^\/(img|thumb|audio)\//.test(rel);
+}
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => {
@@ -23,7 +50,7 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET" || req.headers.has("range")) return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin) return;
+  if (url.origin !== location.origin && !isRemoteAtlas(url)) return;
   const isShell = req.mode === "navigate" || url.pathname.endsWith("/index.json");
   if (isShell) {
     event.respondWith(
@@ -41,9 +68,13 @@ self.addEventListener("fetch", (event) => {
       (hit) =>
         hit ||
         fetch(req).then((res) => {
-          if (res.ok && res.type === "basic") {
+          const media = isAtlasMedia(url);
+          // Same-origin responses are "basic". Remote JSON and CORS images are "cors".
+          // <audio> and <img> without crossorigin are opaque; only media is stored that way.
+          const storable = (res.ok && (res.type === "basic" || res.type === "cors")) || (res.type === "opaque" && media);
+          if (storable) {
             const copy = res.clone();
-            const name = /\/atlas\/(img|thumb|audio)\//.test(url.pathname) ? MEDIA : SHELL;
+            const name = media ? MEDIA : SHELL;
             caches.open(name).then((c) => c.put(req, copy)).then(() => name === MEDIA && trim(MEDIA, 1500));
           }
           return res;

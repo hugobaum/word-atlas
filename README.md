@@ -116,7 +116,7 @@ npm run check:atlas  # 词库结构与媒体校验
 npm run build        # 构建到 dist/
 ```
 
-子路径部署：`ATLAS_BASE=/words/ npm run build`。完整说明见 [部署文档](docs/deployment.md)。
+子路径部署：`ATLAS_BASE=/words/ npm run build`。Cloudflare Pages 免费版要把 `public/atlas` 放到 R2（`VITE_ATLAS_BASE`），见 [部署文档](docs/deployment.md) 与 [R2](docs/DEPLOY_R2.md)。
 
 **技术栈**：React 19 · TypeScript · Vite · ts-fsrs · WebGL2
 

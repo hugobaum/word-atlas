@@ -1,8 +1,8 @@
+import { resolveAtlasRoot } from "./root";
 import type { Atlas, Entry, IndexRow, WordRef } from "./types";
 import { MEDIA } from "./types";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-const url = (p: string) => `${BASE}/atlas/${p}`;
+const url = (p: string) => `${resolveAtlasRoot(import.meta.env.BASE_URL, import.meta.env.VITE_ATLAS_BASE)}/${p}`;
 
 interface IndexFile {
   id: string;
