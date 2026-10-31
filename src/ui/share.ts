@@ -1,3 +1,4 @@
+import { isAbsoluteHttpUrl } from "../atlas/root";
 import type { Atlas, Entry } from "../atlas/types";
 import { toast } from "./Toast";
 
@@ -7,6 +8,7 @@ const SANS = '-apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei
 function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
+    if (isAbsoluteHttpUrl(src)) img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = src;

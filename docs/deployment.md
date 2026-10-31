@@ -18,6 +18,10 @@ location ^~ /words/ {
 }
 ```
 
+## Cloudflare Pages
+
+`public/atlas` 超过免费版的 20,000 文件上限。把该目录放到 R2，构建时设置 `VITE_ATLAS_BASE`，见 [DEPLOY_R2.md](./DEPLOY_R2.md)。这和子路径用的 `ATLAS_BASE` 不是同一个变量。
+
 ## GitHub Pages
 
 仓库带有 `.github/workflows/pages.yml`。在仓库 Settings → Pages 选择 “GitHub Actions”，然后手动运行 “Deploy to GitHub Pages”。
